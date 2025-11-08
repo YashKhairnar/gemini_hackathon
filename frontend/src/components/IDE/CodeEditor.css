@@ -1,0 +1,201 @@
+.code-editor-container {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  background-color: #1E1E1E;
+  overflow: hidden;
+}
+
+.editor-tabs {
+  display: flex;
+  background-color: #2D2D30;
+  border-bottom: 1px solid #3E3E42;
+  overflow-x: auto;
+  min-height: 35px;
+}
+
+.editor-tab {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 8px 16px;
+  background-color: #2D2D30;
+  border-right: 1px solid #3E3E42;
+  cursor: pointer;
+  color: #CCCCCC;
+  font-size: 13px;
+  white-space: nowrap;
+  transition: background-color 0.2s;
+  min-width: 120px;
+}
+
+.editor-tab:hover {
+  background-color: #37373D;
+}
+
+.editor-tab.active {
+  background-color: #1E1E1E;
+  color: #FFFFFF;
+}
+
+.close-tab {
+  background: none;
+  border: none;
+  color: #CCCCCC;
+  cursor: pointer;
+  font-size: 18px;
+  line-height: 1;
+  padding: 0;
+  width: 16px;
+  height: 16px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 3px;
+  transition: background-color 0.2s, color 0.2s;
+}
+
+.close-tab:hover {
+  background-color: #3E3E42;
+  color: #FFFFFF;
+}
+
+.editor-content {
+  flex: 1;
+  position: relative;
+  overflow: hidden;
+}
+
+.code-wrapper {
+  position: relative;
+  width: 100%;
+  height: 100%;
+  display: flex;
+  overflow: hidden;
+}
+
+.line-numbers {
+  background-color: #252526;
+  color: #858585;
+  padding: 12px 8px;
+  font-family: 'Monaco', 'Menlo', 'Ubuntu Mono', monospace;
+  font-size: 14px;
+  line-height: 1.5;
+  text-align: right;
+  user-select: none;
+  min-width: 50px;
+  border-right: 1px solid #3E3E42;
+  overflow: hidden;
+  flex-shrink: 0;
+}
+
+.line-number {
+  padding-right: 12px;
+}
+
+.code-textarea {
+  position: absolute;
+  top: 0;
+  left: 58px;
+  width: calc(100% - 58px);
+  height: 100%;
+  background: transparent;
+  border: none;
+  color: transparent;
+  caret-color: #AEAFAD;
+  font-family: 'Monaco', 'Menlo', 'Ubuntu Mono', monospace;
+  font-size: 14px;
+  line-height: 1.5;
+  padding: 12px;
+  resize: none;
+  outline: none;
+  tab-size: 2;
+  white-space: pre;
+  overflow-wrap: normal;
+  overflow: auto;
+  z-index: 2;
+}
+
+.code-highlight {
+  position: absolute;
+  top: 0;
+  left: 58px;
+  width: calc(100% - 58px);
+  height: 100%;
+  margin: 0;
+  padding: 12px;
+  background-color: #1E1E1E;
+  font-family: 'Monaco', 'Menlo', 'Ubuntu Mono', monospace;
+  font-size: 14px;
+  line-height: 1.5;
+  overflow: hidden;
+  white-space: pre;
+  tab-size: 2;
+  z-index: 1;
+  pointer-events: none;
+}
+
+.code-highlight code {
+  color: #CCCCCC;
+  font-family: inherit;
+  font-size: inherit;
+  line-height: inherit;
+}
+
+.code-highlight .keyword {
+  color: #569CD6;
+}
+
+.code-highlight .string {
+  color: #CE9178;
+}
+
+.code-highlight .comment {
+  color: #6A9955;
+  font-style: italic;
+}
+
+.code-highlight .number {
+  color: #B5CEA8;
+}
+
+.code-highlight .selector {
+  color: #D7BA7D;
+}
+
+.code-highlight .property {
+  color: #9CDCFE;
+}
+
+.code-highlight .value {
+  color: #CE9178;
+}
+
+.code-highlight .tag {
+  color: #569CD6;
+}
+
+.code-highlight .attribute {
+  color: #92C5F7;
+}
+
+.no-file-selected {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  height: 100%;
+  color: #858585;
+  gap: 8px;
+}
+
+.no-file-selected p {
+  margin: 0;
+  font-size: 14px;
+}
+
+.no-file-selected .hint {
+  font-size: 12px;
+  color: #6A6A6A;
+}
+

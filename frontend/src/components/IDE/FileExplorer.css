@@ -1,0 +1,192 @@
+.file-explorer {
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+  background-color: #252526;
+}
+
+.explorer-tabs {
+  display: flex;
+  background-color: #2D2D30;
+  border-bottom: 1px solid #3E3E42;
+}
+
+.explorer-tabs .tab {
+  flex: 1;
+  padding: 10px 16px;
+  background: none;
+  border: none;
+  color: #CCCCCC;
+  cursor: pointer;
+  font-size: 13px;
+  border-bottom: 2px solid transparent;
+  transition: color 0.2s, border-color 0.2s;
+}
+
+.explorer-tabs .tab:hover {
+  color: #FFFFFF;
+  background-color: #2A2D2E;
+}
+
+.explorer-tabs .tab.active {
+  color: #FFFFFF;
+  border-bottom-color: #4285F4;
+  background-color: #252526;
+}
+
+.file-tree {
+  flex: 1;
+  padding: 8px;
+  overflow-y: auto;
+  font-size: 13px;
+}
+
+.file-tree-item {
+  user-select: none;
+}
+
+.folder-item,
+.file-item {
+  display: flex;
+  align-items: center;
+  padding: 4px 8px;
+  cursor: pointer;
+  border-radius: 3px;
+  transition: background-color 0.15s;
+  gap: 6px;
+}
+
+.folder-item:hover,
+.file-item:hover {
+  background-color: #2A2D2E;
+}
+
+.folder-item.selected,
+.file-item.selected {
+  background-color: #094771;
+  color: #FFFFFF;
+}
+
+.folder-icon {
+  font-size: 10px;
+  color: #CCCCCC;
+  width: 12px;
+  display: inline-block;
+  transition: transform 0.2s;
+}
+
+.folder-icon.expanded {
+  transform: rotate(90deg);
+}
+
+.folder-name {
+  color: #CCCCCC;
+}
+
+.file-item.selected .folder-name,
+.folder-item.selected .folder-name {
+  color: #FFFFFF;
+}
+
+.file-icon {
+  font-size: 14px;
+  width: 16px;
+  display: inline-block;
+  text-align: center;
+}
+
+.file-name {
+  color: #CCCCCC;
+}
+
+.file-item.selected .file-name {
+  color: #FFFFFF;
+}
+
+.folder-children {
+  margin-left: 16px;
+  border-left: 1px solid #3E3E42;
+  padding-left: 8px;
+}
+
+/* File Toolbar */
+.file-toolbar {
+  display: flex;
+  gap: 8px;
+  padding: 8px;
+  background-color: #2D2D30;
+  border-bottom: 1px solid #3E3E42;
+}
+
+.toolbar-btn {
+  background: #3E3E42;
+  border: none;
+  color: #CCCCCC;
+  padding: 6px 12px;
+  border-radius: 3px;
+  cursor: pointer;
+  font-size: 14px;
+  transition: background-color 0.2s;
+}
+
+.toolbar-btn:hover {
+  background-color: #505050;
+  color: #FFFFFF;
+}
+
+.toolbar-btn span {
+  display: inline-block;
+}
+
+/* Context Menu */
+.context-menu {
+  position: fixed;
+  background-color: #2D2D30;
+  border: 1px solid #3E3E42;
+  border-radius: 4px;
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.4);
+  z-index: 1000;
+  min-width: 150px;
+  padding: 4px 0;
+}
+
+.context-menu-item {
+  padding: 8px 16px;
+  color: #CCCCCC;
+  cursor: pointer;
+  font-size: 13px;
+  transition: background-color 0.15s;
+}
+
+.context-menu-item:hover {
+  background-color: #094771;
+  color: #FFFFFF;
+}
+
+.context-menu-item.delete:hover {
+  background-color: #B00020;
+}
+
+.context-menu-separator {
+  height: 1px;
+  background-color: #3E3E42;
+  margin: 4px 0;
+}
+
+/* Rename Input */
+.rename-input {
+  background-color: #3E3E42;
+  border: 1px solid #4285F4;
+  color: #FFFFFF;
+  padding: 2px 4px;
+  font-size: 13px;
+  border-radius: 2px;
+  outline: none;
+  flex: 1;
+}
+
+.rename-input:focus {
+  border-color: #4285F4;
+  box-shadow: 0 0 0 2px rgba(66, 133, 244, 0.3);
+}
+

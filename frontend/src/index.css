@@ -1,0 +1,358 @@
+:root {
+    font-family: Inter, system-ui, Avenir, Helvetica, Arial, sans-serif;
+    line-height: 1.5;
+    font-weight: 400;
+
+    color-scheme: light dark;
+    color: rgba(255, 255, 255, 0.87);
+    background-color: #242424;
+
+    font-synthesis: none;
+    text-rendering: optimizeLegibility;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+    -webkit-text-size-adjust: 100%;
+}
+
+a {
+    font-weight: 500;
+    color: #646cff;
+    text-decoration: inherit;
+}
+a:hover {
+    color: #535bf2;
+}
+
+body {
+    margin: 0;
+    display: flex;
+    place-items: stretch;
+    min-width: 320px;
+    min-height: 100vh;
+}
+
+h1 {
+    font-size: 3.2em;
+    line-height: 1.1;
+}
+
+button {
+    border-radius: 8px;
+    border: 1px solid transparent;
+    padding: 0.6em 1.2em;
+    font-size: 1em;
+    font-weight: 500;
+    font-family: inherit;
+    background-color: #1a1a1a;
+    cursor: pointer;
+    transition: border-color 0.25s;
+}
+button:hover {
+    border-color: #646cff;
+}
+button:focus,
+button:focus-visible {
+    outline: 4px auto -webkit-focus-ring-color;
+}
+
+@media (prefers-color-scheme: light) {
+    :root {
+        color: #213547;
+        background-color: #ffffff;
+    }
+    a:hover {
+        color: #747bff;
+    }
+    button {
+        background-color: #f9f9f9;
+        border: 1px solid var(--pico-primary);
+        color: var(--pico-primary);
+    }
+}
+
+/**
+ * app styles
+ */
+#root {
+    max-width: 1000px;
+    margin: 0 auto;
+    padding: 2rem;
+    flex-grow: 1;
+    display: flex;
+    flex-direction: column;
+}
+
+main {
+    display: flex;
+    gap: 2rem;
+    flex-grow: 1;
+}
+
+header {
+    margin-bottom: 2rem;
+}
+
+footer {
+    margin-top: 2rem;
+    text-align: center;
+}
+
+#automerge-logo {
+    height: 2em;
+    margin-right: 0.5em;
+    vertical-align: middle;
+}
+
+/* Layout for DocumentList and TaskList */
+.document-list {
+    width: 300px;
+    flex-shrink: 0;
+    border-right: 1px solid var(--primary);
+    padding-right: 1rem;
+}
+
+.task-list {
+    flex-grow: 1;
+}
+
+.footer-copy {
+    color: #888;
+}
+
+.sync-controls {
+    display: flex;
+    gap: 1rem;
+    margin-left: auto;
+}
+
+.sync-controls button {
+    margin: 0;
+}
+
+dialog {
+    padding: 1rem;
+    border-radius: 0.5rem;
+    border: 1px solid var(--primary);
+}
+
+dialog article {
+    margin: 0;
+}
+
+dialog input {
+    width: 100%;
+    margin: 1rem 0;
+}
+
+dialog footer {
+    display: flex;
+    gap: 1rem;
+    justify-content: flex-end;
+}
+
+dialog footer button {
+    margin: 0;
+}
+
+/**
+ * task styles
+ */
+.task {
+    display: flex;
+    flex-direction: row;
+    justify-content: center;
+    align-items: center;
+    gap: 1em;
+    margin-bottom: 1em;
+}
+
+.task input {
+    margin: 0;
+}
+
+.task input[type="text"] {
+    background-color: var(--pico-secondary-background);
+}
+
+.task input[type="checkbox"]:not(:checked) {
+    background-color: var(--pico-secondary-background);
+}
+
+/**
+ * document list styles
+ */
+
+.document-list {
+    display: flex;
+    flex-direction: column;
+    gap: 1rem;
+}
+
+.documents {
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
+}
+
+.document-item {
+    padding: 0.5rem;
+    border-radius: 4px;
+    cursor: pointer;
+    transition: background-color 0.2s ease;
+}
+
+.document-item:hover {
+    background-color: var(--pico-primary-hover);
+}
+
+.document-item.active {
+    background-color: var(--pico-primary);
+    color: var(--pico-primary-inverse);
+}
+
+.document-item.active:hover {
+    background-color: var(--pico-primary-hover);
+}
+
+.document-list button {
+    width: 100%;
+    margin-top: 1rem;
+    background-color: transparent;
+    border: 1px solid var(--pico-primary);
+    color: var(--pico-primary);
+    transition: all 0.2s ease;
+}
+
+.document-list button:hover {
+    background-color: var(--pico-primary);
+    color: var(--pico-primary-inverse);
+}
+
+/**
+ * Hero section styles
+ */
+.hero-section {
+    max-width: 800px;
+    margin: 0 auto;
+    text-align: center;
+    padding: 2rem 1rem;
+}
+
+.hero-description {
+    font-size: 1.125rem;
+    line-height: 1.7;
+    color: rgba(255, 255, 255, 0.7);
+    margin-bottom: 2.5rem;
+    max-width: 600px;
+    margin-left: auto;
+    margin-right: auto;
+}
+
+.input-container {
+    margin-top: 3rem;
+}
+
+.input-wrapper {
+    display: flex;
+    gap: 0.75rem;
+    align-items: stretch;
+    background: rgba(255, 255, 255, 0.05);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    border-radius: 12px;
+    padding: 0.5rem;
+    transition: all 0.3s ease;
+    backdrop-filter: blur(10px);
+    max-width: 700px;
+    margin: 0 auto;
+}
+
+.input-wrapper:focus-within {
+    border-color: #6366f1;
+    box-shadow: 0 0 0 3px rgba(99, 102, 241, 0.1);
+    background: rgba(255, 255, 255, 0.08);
+}
+
+.idea-input {
+    flex: 1;
+    background: transparent;
+    border: none;
+    outline: none;
+    padding: 1rem 1.25rem;
+    font-size: 1rem;
+    color: rgba(255, 255, 255, 0.9);
+    font-family: inherit;
+    min-width: 0;
+}
+
+.idea-input::placeholder {
+    color: rgba(255, 255, 255, 0.4);
+}
+
+.idea-input:focus {
+    outline: none;
+}
+
+.launch-button {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    padding: 1rem 2rem;
+    background: linear-gradient(135deg, #6366f1 0%, #8b5cf6 100%);
+    border: none;
+    border-radius: 8px;
+    color: white;
+    font-size: 1rem;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    white-space: nowrap;
+    box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.3);
+}
+
+.launch-button:hover:not(:disabled) {
+    background: linear-gradient(135deg, #5b5fed 0%, #7c3aed 100%);
+    transform: translateY(-1px);
+    box-shadow: 0 6px 12px -2px rgba(99, 102, 241, 0.4);
+}
+
+.launch-button:active:not(:disabled) {
+    transform: translateY(0);
+    box-shadow: 0 2px 4px -1px rgba(0, 0, 0, 0.3);
+}
+
+.launch-button:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+    background: rgba(99, 102, 241, 0.3);
+}
+
+.launch-button svg {
+    transition: transform 0.2s ease;
+}
+
+.launch-button:hover:not(:disabled) svg {
+    transform: translateX(2px);
+}
+
+.input-hint {
+    margin-top: 1rem;
+    font-size: 0.875rem;
+    color: rgba(255, 255, 255, 0.5);
+    font-style: italic;
+}
+
+@media (max-width: 640px) {
+    .input-wrapper {
+        flex-direction: column;
+        gap: 0.5rem;
+    }
+    
+    .launch-button {
+        width: 100%;
+        justify-content: center;
+    }
+    
+    .hero-description {
+        font-size: 1rem;
+    }
+}
