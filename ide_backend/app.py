@@ -3,6 +3,7 @@ from flask_cors import CORS
 from flask_socketio import SocketIO, emit, join_room
 import os
 import logging
+import shutil
 from terminal_manager import TerminalManager
 from file_manager import FileManager
 
@@ -32,20 +33,34 @@ socketio = SocketIO(
 project_root = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 outputs_path = os.path.join(project_root, 'agentapp', 'src', 'agentapp', 'outputs')
 
-# Use outputs directory if it exists, otherwise fallback to project root
-if os.path.exists(outputs_path):
-    workspace_path = outputs_path
-    logger.info(f'Using agent outputs directory: {workspace_path}')
-else:
-    workspace_path = project_root
-    logger.warning(f'Outputs directory not found at {outputs_path}, using project root: {workspace_path}')
+# ALWAYS use outputs directory - create it if it doesn't exist
+# This ensures the IDE only shows files from the outputs directory
+if not os.path.exists(outputs_path):
+    os.makedirs(outputs_path, exist_ok=True)
+    logger.info(f'Created outputs directory: {outputs_path}')
+
+workspace_path = outputs_path
+logger.info(f'IDE workspace set to outputs directory: {workspace_path}')
+logger.info(f'IDE will ONLY show files from: {workspace_path}')
 
 file_manager = FileManager(workspace_root=workspace_path)
 logger.info(f'File manager initialized with workspace: {file_manager.workspace_root}')
 
+# Find ide_backend venv (check if it exists)
+ide_backend_dir = os.path.dirname(os.path.abspath(__file__))
+ide_backend_venv = os.path.join(ide_backend_dir, 'venv')
+default_venv_path = None
+if os.path.exists(os.path.join(ide_backend_venv, 'bin', 'activate')):
+    default_venv_path = ide_backend_venv
+    logger.info(f'Found ide_backend venv: {default_venv_path}')
+else:
+    logger.info(f'No venv found in ide_backend directory: {ide_backend_venv}')
+
 # Initialize terminal manager with workspace root as default working directory
-terminal_manager = TerminalManager(socketio, default_working_dir=workspace_path)
+terminal_manager = TerminalManager(socketio, default_working_dir=workspace_path, default_venv_path=default_venv_path)
 logger.info(f'Terminal manager initialized with default working directory: {workspace_path}')
+if default_venv_path:
+    logger.info(f'Terminal will use venv: {default_venv_path}')
 
 # Store active sessions
 active_sessions = {}
@@ -61,7 +76,8 @@ def health_check():
     return jsonify({
         'status': 'ok', 
         'message': 'Backend is running',
-        'workspace': file_manager.workspace_root
+        'workspace': file_manager.workspace_root,
+        'workspace_type': 'outputs_directory' if 'outputs' in file_manager.workspace_root else 'project_root'
     })
 
 
@@ -78,6 +94,62 @@ def workspace():
         result = file_manager.set_workspace(workspace_path)
         return jsonify(result)
 
+
+@app.route('/api/files/clear-workspace', methods=['POST'])
+def clear_workspace():
+    """Clear all files in the workspace (outputs directory)"""
+    try:
+        workspace_root = file_manager.workspace_root
+        
+        # Ensure workspace directory exists
+        if not os.path.exists(workspace_root):
+            os.makedirs(workspace_root, exist_ok=True)
+            logger.info(f'Created workspace directory: {workspace_root}')
+            return jsonify({'success': True, 'message': 'Workspace directory created (was empty)', 'cleared_count': 0}), 200
+        
+        items = os.listdir(workspace_root)
+        cleared_count = 0
+        errors = []
+        
+        for item_name in items:
+            # Skip hidden files (including .gitkeep, .git, etc.)
+            if item_name.startswith('.'):
+                continue
+            
+            item_path = os.path.join(workspace_root, item_name)
+            try:
+                if os.path.isdir(item_path):
+                    shutil.rmtree(item_path)
+                    cleared_count += 1
+                    logger.debug(f'Removed directory: {item_path}')
+                else:
+                    os.remove(item_path)
+                    cleared_count += 1
+                    logger.debug(f'Removed file: {item_path}')
+            except Exception as e:
+                error_msg = f'Error removing {item_name}: {e}'
+                errors.append(error_msg)
+                logger.warning(error_msg)
+        
+        # Ensure directory still exists after clearing
+        os.makedirs(workspace_root, exist_ok=True)
+        
+        logger.info(f'Cleared workspace: {cleared_count} items removed from {workspace_root}')
+        
+        response_data = {
+            'success': True,
+            'message': f'Workspace cleared: {cleared_count} items removed',
+            'cleared_count': cleared_count
+        }
+        
+        if errors:
+            response_data['warnings'] = errors
+        
+        return jsonify(response_data), 200
+        
+    except Exception as e:
+        logger.error(f'Error clearing workspace: {e}')
+        return jsonify({'error': str(e)}), 500
 
 @app.route('/api/files/tree', methods=['GET'])
 def get_file_tree():
@@ -149,7 +221,7 @@ def delete_file():
     if request.method == 'DELETE':
         data = request.json if request.is_json else {}
     else:
-    data = request.json
+        data = request.json
     
     file_path = data.get('path')
     if not file_path:

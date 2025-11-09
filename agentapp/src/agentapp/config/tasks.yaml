@@ -1,26 +1,53 @@
 decompose_task:
   description: >
     Analyze the incoming feature request: "{user_input}".
-    Decompose this request into specific, actionable instructions for each specialized agent.
-    You must create clear, separate instructions for:
-    1. Frontend Agent - specific UI/UX tasks, components to build, user interactions, and folder structure
-    2. Backend Agent - specific API endpoints, data models, security requirements, business logic, and folder structure
-    3. QA Agent - specific test requirements and validation criteria
+    
+    CRITICAL: Determine which tasks are ACTUALLY NEEDED:
+    
+    1. **Frontend Task** - ONLY include this if the user request requires:
+       - A user interface (UI)
+       - Web pages, components, or visual elements
+       - User-facing features that need a frontend
+       - Client-side interaction
+    
+    2. **Backend Task** - ONLY include this if the user request requires:
+       - Server-side logic
+       - APIs or REST endpoints
+       - Database operations
+       - Backend services
+       - Server processing
+    
+    3. **QA Requirements** - ALWAYS include this for validation
+    
+    EXAMPLES:
+    - "Create a static landing page" → Frontend Task + QA Requirements (NO Backend Task)
+    - "Build a REST API for user management" → Backend Task + QA Requirements (NO Frontend Task)
+    - "Create a todo app with API" → Frontend Task + Backend Task + QA Requirements
+    - "Make a calculator component" → Frontend Task + QA Requirements (NO Backend Task)
+    
+    For each task that IS needed, create clear, separate instructions:
+    - Frontend Agent (if needed): specific UI/UX tasks, components to build, user interactions, folder structure
+    - Backend Agent (if needed): specific API endpoints, data models, security requirements, business logic, folder structure
+    - QA Agent (always): specific test requirements and validation criteria
     
     Be extremely specific and detailed in your decomposition so each agent knows exactly what to build.
     Specify the folder structure that should be created (e.g., frontend/components/, backend/routes/, etc.).
+    
+    IMPORTANT: If a task is NOT needed, simply omit that section entirely. Do NOT create empty or placeholder sections.
   expected_output: >
     A structured decomposition in the following format:
     
+    [Include ONLY the sections that are needed]
+    
     ## Frontend Task
-    [Detailed instructions for frontend development including:
+    [ONLY include if frontend is needed - Detailed instructions for frontend development including:
     - Specific components to build
     - User flows and UI requirements
     - Folder structure (e.g., components/, pages/, styles/)
     - File organization and naming conventions]
     
     ## Backend Task  
-    [Detailed instructions for backend development including:
+    [ONLY include if backend is needed - Detailed instructions for backend development including:
     - API endpoints with exact paths and methods
     - Data models and database schemas
     - Security requirements (authentication, validation, etc.)
@@ -29,13 +56,14 @@ decompose_task:
     - Dependencies and requirements]
     
     ## QA Requirements
-    [Specific test cases and validation criteria including:
+    [ALWAYS include - Specific test cases and validation criteria including:
     - Unit tests
     - Integration tests
     - End-to-end test scenarios
     - Expected behaviors and edge cases]
     
     Each section must be detailed enough for the respective agent to implement without ambiguity.
+    If Frontend Task or Backend Task is not needed, do not include that section at all.
   agent: orchestrator_agent
   allow_delegation: True
   output_file: outputs/decomposition_output.md
@@ -44,10 +72,19 @@ decompose_task:
 frontend_coding_task:
   description: >
     Review the decomposition provided by the orchestrator in the context.
-    Extract the "## Frontend Task" section from the orchestrator's decomposition output.
     
-    Your task is to implement EXACTLY what the orchestrator specified in the Frontend Task section.
-    Do NOT use the original user_input directly - only use the specific frontend instructions from the decomposition.
+    CRITICAL: Check if the decomposition contains a "## Frontend Task" section.
+    
+    If NO "## Frontend Task" section exists in the decomposition:
+    - This means the user request does not require frontend work
+    - Do NOT create any files
+    - Output a message in frontend_output.md stating: "No frontend work required for this request."
+    - Skip all file creation steps
+    
+    If a "## Frontend Task" section EXISTS:
+    - Extract the "## Frontend Task" section from the orchestrator's decomposition output
+    - Your task is to implement EXACTLY what the orchestrator specified in the Frontend Task section
+    - Do NOT use the original user_input directly - only use the specific frontend instructions from the decomposition
     
     CRITICAL INSTRUCTIONS FOR FILE CREATION:
     You have access to a 'create_file' tool that you MUST use to create actual code files.
@@ -97,10 +134,19 @@ frontend_coding_task:
 backend_coding_task:
   description: >
     Review the decomposition provided by the orchestrator in the context.
-    Extract the "## Backend Task" section from the orchestrator's decomposition output.
     
-    Your task is to implement EXACTLY what the orchestrator specified in the Backend Task section.
-    Do NOT use the original user_input directly - only use the specific backend instructions from the decomposition.
+    CRITICAL: Check if the decomposition contains a "## Backend Task" section.
+    
+    If NO "## Backend Task" section exists in the decomposition:
+    - This means the user request does not require backend work
+    - Do NOT create any files
+    - Output a message in backend_output.md stating: "No backend work required for this request."
+    - Skip all file creation steps
+    
+    If a "## Backend Task" section EXISTS:
+    - Extract the "## Backend Task" section from the orchestrator's decomposition output
+    - Your task is to implement EXACTLY what the orchestrator specified in the Backend Task section
+    - Do NOT use the original user_input directly - only use the specific backend instructions from the decomposition
     
     CRITICAL INSTRUCTIONS FOR FILE CREATION:
     You have access to a 'create_file' tool that you MUST use to create actual code files.
@@ -151,20 +197,25 @@ backend_coding_task:
   output_file: outputs/backend_output.md
   allow_delegation: False
 
-# Final QA task, always runs last and depends on both coding tasks
+# Final QA task, always runs last and depends on coding tasks
 final_qa_validation_task:
   description: >
     Review the decomposition provided by the orchestrator to understand the QA requirements.
     Extract the "## QA Requirements" section from the orchestrator's decomposition output.
     
-    Analyze the code outputs from the 'frontend_coding_task' and 'backend_coding_task'.
+    Analyze the code outputs from the tasks that were actually executed:
+    - Check if 'frontend_coding_task' was executed (look for frontend_output.md and outputs/frontend/ directory)
+    - Check if 'backend_coding_task' was executed (look for backend_output.md and outputs/backend/ directory)
+    
     Your goal is to verify that:
     1. The orchestrator's specific QA requirements (from the decomposition) have been met
     2. The original user requirement ("{user_input}") has been fully satisfied
-    3. The frontend and backend implementations are properly integrated
+    3. If both frontend and backend were created, verify they are properly integrated
+    4. If only frontend was created, verify it meets the requirements without backend
+    5. If only backend was created, verify it meets the requirements without frontend
     
     Use the QA requirements from the decomposition as your primary test criteria.
-    If the code fails, identify the failure point (Frontend logic error, Backend bug, or integration issue)
+    If the code fails, identify the failure point (Frontend logic error, Backend bug, integration issue, or missing requirement)
     and output a structured failure report.
   expected_output: >
     A final verdict: 'PASS' or 'FAIL' followed by a detailed, technical explanation.

@@ -11,16 +11,50 @@ from datetime import datetime
 class TerminalSession:
     """Manages a single PTY terminal session"""
 
-    def __init__(self, session_id, working_dir, socket_io, client_sid, namespace='/'):
+    def __init__(self, session_id, working_dir, socket_io, client_sid, namespace='/', venv_path=None):
         self.session_id = session_id
         self.working_dir = working_dir
         self.socket_io = socket_io
         self.client_sid = client_sid  # Store the client's socket ID
         self.namespace = namespace
+        self.venv_path = venv_path  # Optional: explicitly provided venv path
         self.master_fd = None
         self.process = None
         self.thread = None
         self.running = False
+
+    def _find_venv(self, directory):
+        """Find virtual environment in directory or parent directories"""
+        # First, check for ide_backend venv (project-specific venv)
+        ide_backend_dir = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+        ide_backend_venv = os.path.join(ide_backend_dir, 'ide_backend', 'venv')
+        if os.path.exists(os.path.join(ide_backend_venv, 'bin', 'activate')):
+            return ide_backend_venv
+        
+        # Also check in ide_backend directory itself (if running from there)
+        current_file_dir = os.path.dirname(os.path.abspath(__file__))
+        venv_in_backend = os.path.join(current_file_dir, 'venv')
+        if os.path.exists(os.path.join(venv_in_backend, 'bin', 'activate')):
+            return venv_in_backend
+        
+        # Fallback: check standard venv locations in workspace
+        venv_paths = ['venv', '.venv', 'env', '.env', 'virtualenv']
+        current_dir = os.path.abspath(directory) if directory else os.getcwd()
+        
+        # Check current directory and parent directories (up to 3 levels up)
+        for _ in range(4):
+            for venv_name in venv_paths:
+                venv_path = os.path.join(current_dir, venv_name)
+                activate_script = os.path.join(venv_path, 'bin', 'activate')
+                if os.path.exists(activate_script):
+                    return venv_path
+            # Move to parent directory
+            parent_dir = os.path.dirname(current_dir)
+            if parent_dir == current_dir:  # Reached root
+                break
+            current_dir = parent_dir
+        
+        return None
 
     def start(self):
         """Start the PTY terminal session"""
@@ -32,10 +66,24 @@ class TerminalSession:
             # Set terminal size
             self._set_terminal_size(80, 24)
 
+            # Find virtual environment (use explicit venv_path if provided, otherwise search)
+            if self.venv_path and os.path.exists(os.path.join(self.venv_path, 'bin', 'activate')):
+                venv_path = self.venv_path
+            else:
+                venv_path = self._find_venv(self.working_dir)
+            
             # Start shell process
             env = os.environ.copy()
             env['TERM'] = 'xterm-256color'
-            env['PS1'] = '\\[\\033[01;32m\\]\\u@\\h\\[\\033[00m\\]:\\[\\033[01;34m\\]\\w\\[\\033[00m\\]\\$ '
+            
+            # Enhanced PS1 that shows venv status
+            if venv_path:
+                venv_name = os.path.basename(venv_path)
+                env['PS1'] = f'\\[\\033[01;32m\\]({venv_name})\\[\\033[00m\\] \\[\\033[01;32m\\]\\u@\\h\\[\\033[00m\\]:\\[\\033[01;34m\\]\\w\\[\\033[00m\\]\\$ '
+                # Store venv path for later activation
+                env['IDE_VENV_PATH'] = venv_path
+            else:
+                env['PS1'] = '\\[\\033[01;32m\\]\\u@\\h\\[\\033[00m\\]:\\[\\033[01;34m\\]\\w\\[\\033[00m\\]\\$ '
 
             self.process = subprocess.Popen(
                 ['/bin/bash'],
@@ -57,6 +105,18 @@ class TerminalSession:
             # Start reading greenthread (eventlet compatible)
             self.running = True
             self.thread = eventlet.spawn(self._read_output)
+            
+            # If venv found, activate it by writing to the terminal after a short delay
+            # This allows bash to fully initialize before we send the activation command
+            if venv_path:
+                def activate_venv():
+                    eventlet.sleep(0.3)  # Wait for bash to be ready (eventlet-friendly sleep)
+                    activate_script = os.path.join(venv_path, 'bin', 'activate')
+                    activation_cmd = f'source "{activate_script}"\n'
+                    self.write_input(activation_cmd)
+                
+                # Use eventlet to schedule the activation in the background
+                eventlet.spawn(activate_venv)
 
             return True
         except Exception as e:
@@ -158,14 +218,16 @@ class TerminalSession:
 class TerminalManager:
     """Manages multiple terminal sessions"""
 
-    def __init__(self, socket_io, default_working_dir=None):
+    def __init__(self, socket_io, default_working_dir=None, default_venv_path=None):
         self.socket_io = socket_io
         self.sessions = {}
         # Use provided working directory or fallback to home directory
         if default_working_dir and os.path.exists(default_working_dir):
             self.default_working_dir = default_working_dir
         else:
-        self.default_working_dir = os.path.expanduser('~')
+            self.default_working_dir = os.path.expanduser('~')
+        # Store default venv path
+        self.default_venv_path = default_venv_path
 
     def create_session(self, session_id=None, working_dir=None, client_sid=None):
         """Create a new terminal session"""
@@ -179,7 +241,9 @@ class TerminalManager:
         if not os.path.exists(working_dir):
             working_dir = self.default_working_dir
 
-        session = TerminalSession(session_id, working_dir, self.socket_io, client_sid)
+        # Use default venv path if available
+        venv_path = self.default_venv_path
+        session = TerminalSession(session_id, working_dir, self.socket_io, client_sid, venv_path=venv_path)
 
         if session.start():
             self.sessions[session_id] = session

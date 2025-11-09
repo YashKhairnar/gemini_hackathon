@@ -428,23 +428,34 @@ function IDE({ repo, rootHandle }) {
     }
   }
 
-  const handleRunCode = async () => {
-    if (!selectedFile) {
-      console.warn('⚠️ No file selected')
-      return
-    }
+      const handleRunCode = async () => {
+        if (!selectedFile) {
+          console.warn('⚠️ No file selected')
+          return
+        }
 
-    if (terminalRef.current && terminalRef.current.executeCommand) {
-      const fileName = selectedFile.path.split('/').pop()
-      const extension = fileName.split('.').pop()?.toLowerCase() || ''
-      // Use the file path as returned from the backend (relative to workspace root)
-      const filePath = selectedFile.path
-      let command = ''
+        if (terminalRef.current && terminalRef.current.executeCommand) {
+          const fileName = selectedFile.path.split('/').pop()
+          const extension = fileName.split('.').pop()?.toLowerCase() || ''
+          // Use the file path as returned from the backend (relative to workspace root)
+          const filePath = selectedFile.path
+          let command = ''
 
-      switch (extension) {
-        case 'py':
-          command = `python "${filePath}"`
-          break
+          switch (extension) {
+            case 'py':
+              // For Python files, change to the file's directory first to handle imports correctly
+              // Also check for virtualenv and use it if available
+              const fileDir = filePath.split('/').slice(0, -1).join('/')
+              
+              // Check for virtualenv in common locations
+              // Try to use python from venv if it exists, otherwise fall back to system python
+              if (fileDir) {
+                // Check if we're in a venv (common venv locations)
+                command = `cd "${fileDir}" && (if [ -f "venv/bin/python" ]; then venv/bin/python "${fileName}"; elif [ -f ".venv/bin/python" ]; then .venv/bin/python "${fileName}"; elif [ -f "env/bin/python" ]; then env/bin/python "${fileName}"; else python "${fileName}"; fi)`
+              } else {
+                command = `python "${filePath}"`
+              }
+              break
         case 'js':
           command = `node "${filePath}"`
           break
@@ -516,14 +527,68 @@ function IDE({ repo, rootHandle }) {
           <div className="ide-loading-content">
             <div className="ide-loading-spinner"></div>
             <h2 className="ide-loading-title">AI Agents are generating your code...</h2>
+            
+            {/* Progress Bar */}
+            {generationStatus?.progress && (
+              <div className="ide-progress-container">
+                <div className="ide-progress-bar">
+                  <div 
+                    className="ide-progress-fill" 
+                    style={{ width: `${generationStatus.progress.percentage || 0}%` }}
+                  ></div>
+                </div>
+                <div className="ide-progress-text">
+                  <span className="ide-progress-step">{generationStatus.progress.step || 'Processing...'}</span>
+                  <span className="ide-progress-percentage">{generationStatus.progress.percentage || 0}%</span>
+                </div>
+              </div>
+            )}
+            
             <p className="ide-loading-message">
               {generationStatus?.error 
                 ? `Error: ${generationStatus.error}`
-                : 'Please wait while our AI agents create your frontend and backend code.'}
+                : generationStatus?.progress?.message || 'Please wait while our AI agents create your frontend and backend code.'}
             </p>
+            
+            {/* File Creation Progress */}
+            {generationStatus?.progress?.files_created !== undefined && generationStatus.progress.files_created > 0 && (
+              <div className="ide-files-progress">
+                <p className="ide-files-count">
+                  {generationStatus.progress.files_created} file{generationStatus.progress.files_created !== 1 ? 's' : ''} created
+                  {generationStatus.progress.frontend_files > 0 && (
+                    <span className="ide-files-breakdown"> • {generationStatus.progress.frontend_files} frontend</span>
+                  )}
+                  {generationStatus.progress.backend_files > 0 && (
+                    <span className="ide-files-breakdown"> • {generationStatus.progress.backend_files} backend</span>
+                  )}
+                </p>
+              </div>
+            )}
+            
             {generationStatus?.started_at && !generationStatus?.error && (
               <p className="ide-loading-time">Elapsed time: {getElapsedTime()}</p>
             )}
+            
+            {/* Step Indicators */}
+            <div className="ide-loading-steps">
+              <div className={`ide-step ${generationStatus?.progress?.percentage >= 10 ? 'completed' : generationStatus?.progress?.percentage >= 5 ? 'active' : ''}`}>
+                <span className="ide-step-icon">{generationStatus?.progress?.percentage >= 10 ? '✓' : '1'}</span>
+                <span className="ide-step-label">Analyzing</span>
+              </div>
+              <div className={`ide-step ${generationStatus?.progress?.percentage >= 30 ? 'completed' : generationStatus?.progress?.percentage >= 20 ? 'active' : ''}`}>
+                <span className="ide-step-icon">{generationStatus?.progress?.percentage >= 30 ? '✓' : '2'}</span>
+                <span className="ide-step-label">Decomposing</span>
+              </div>
+              <div className={`ide-step ${generationStatus?.progress?.percentage >= 60 ? 'completed' : generationStatus?.progress?.percentage >= 40 ? 'active' : ''}`}>
+                <span className="ide-step-icon">{generationStatus?.progress?.percentage >= 60 ? '✓' : '3'}</span>
+                <span className="ide-step-label">Creating Files</span>
+              </div>
+              <div className={`ide-step ${generationStatus?.progress?.percentage >= 95 ? 'completed' : generationStatus?.progress?.percentage >= 85 ? 'active' : ''}`}>
+                <span className="ide-step-icon">{generationStatus?.progress?.percentage >= 95 ? '✓' : '4'}</span>
+                <span className="ide-step-label">Validating</span>
+              </div>
+            </div>
+            
             <div className="ide-loading-status">
               {generationStatus?.has_frontend && (
                 <span className="ide-loading-badge ide-loading-badge-success">✓ Frontend Ready</span>
@@ -531,10 +596,10 @@ function IDE({ repo, rootHandle }) {
               {generationStatus?.has_backend && (
                 <span className="ide-loading-badge ide-loading-badge-success">✓ Backend Ready</span>
               )}
-              {!generationStatus?.has_frontend && !generationStatus?.is_generating && (
+              {!generationStatus?.has_frontend && generationStatus?.progress?.percentage >= 40 && !generationStatus?.is_generating && (
                 <span className="ide-loading-badge">⏳ Frontend Pending</span>
               )}
-              {!generationStatus?.has_backend && !generationStatus?.is_generating && (
+              {!generationStatus?.has_backend && generationStatus?.progress?.percentage >= 40 && !generationStatus?.is_generating && (
                 <span className="ide-loading-badge">⏳ Backend Pending</span>
               )}
             </div>

@@ -38,33 +38,6 @@ console.log(`📍 Current URL: ${window.location.href}`);
 // Create WebSocket adapter with error handling
 const wsAdapter = new WebSocketClientAdapter(syncServerUrl);
 
-// Add connection timeout
-let connectionTimeout: ReturnType<typeof setTimeout>;
-const CONNECTION_TIMEOUT = 10000; // 10 seconds
-
-// Log connection events if available
-if (wsAdapter && typeof (wsAdapter as any).on === 'function') {
-  (wsAdapter as any).on('error', (error: Error) => {
-    console.error('❌ WebSocket connection error:', error);
-    console.error('   Make sure the sync server is running on port 3030');
-    console.error('   Run: npm run sync-server');
-  });
-  (wsAdapter as any).on('open', () => {
-    console.log('✅ WebSocket connected to sync server');
-    if (connectionTimeout) clearTimeout(connectionTimeout);
-  });
-  (wsAdapter as any).on('close', () => {
-    console.warn('⚠️ WebSocket disconnected from sync server');
-  });
-  
-  // Set timeout to warn if connection takes too long
-  connectionTimeout = setTimeout(() => {
-    console.warn('⏱️ Sync server connection taking longer than expected...');
-    console.warn('   Verify sync server is running: npm run sync-server');
-    console.warn('   Check firewall settings if accessing from another device');
-  }, CONNECTION_TIMEOUT);
-}
-
 const repo = new Repo({
   network: [
     new BroadcastChannelNetworkAdapter(),

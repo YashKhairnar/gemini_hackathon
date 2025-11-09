@@ -1,11 +1,48 @@
 import "@picocss/pico/css/pico.min.css";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useLocation } from "wouter";
 
 export function FirstPage() {
   const [idea, setIdea] = useState<string>("");
   const [isLaunching, setIsLaunching] = useState<boolean>(false);
   const [, setLocation] = useLocation();
+
+  // Clear outputs directory when FirstPage mounts
+  useEffect(() => {
+    const clearOutputs = async () => {
+      try {
+        // Get IDE backend URL (port 5002)
+        const getIDEBackendUrl = () => {
+          const hostname = window.location.hostname;
+          const ideBackendPort = 5002;
+          if (hostname === "localhost" || hostname === "127.0.0.1") {
+            return `http://localhost:${ideBackendPort}`;
+          }
+          return `http://${hostname}:${ideBackendPort}`;
+        };
+
+        const ideBackendUrl = getIDEBackendUrl();
+        const response = await fetch(`${ideBackendUrl}/api/files/clear-workspace`, {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+        });
+
+        if (response.ok) {
+          const data = await response.json();
+          console.log('✅ Outputs directory cleared:', data.message);
+        } else {
+          console.warn('⚠️ Failed to clear outputs directory (non-critical)');
+        }
+      } catch (error) {
+        // Non-critical error - just log it
+        console.warn('⚠️ Could not clear outputs directory (non-critical):', error);
+      }
+    };
+
+    clearOutputs();
+  }, []); // Run once when component mounts
 
   const handleLaunch = () => {
     if (!idea.trim() || isLaunching) return;
