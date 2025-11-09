@@ -98,19 +98,20 @@ export function FirstPage() {
         <>
         <style>{`
             :root {
-              --primary-gradient: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-              --primary-color: #667eea;
-              --primary-hover: #5568d3;
-              --background-dark: #0f172a;
-              --surface-color: #1e293b;
-              --border-color: rgba(148, 163, 184, 0.1);
-              --text-muted: #94a3b8;
-              --glow-color: rgba(102, 126, 234, 0.4);
+              --primary-gradient: linear-gradient(135deg, #0ea5e9 0%, #06b6d4 100%);
+              --primary-color: #0ea5e9;
+              --primary-hover: #0284c7;
+              --background-light: #ffffff;
+              --surface-color: #f8fafc;
+              --border-color: rgba(148, 163, 184, 0.2);
+              --text-primary: #1e293b;
+              --text-muted: #64748b;
+              --glow-color: rgba(14, 165, 233, 0.3);
             }
     
              body {
-               background: var(--background-dark) !important;
-               color: #f1f5f9 !important;
+               background: var(--background-light) !important;
+               color: var(--text-primary) !important;
                height: 100vh !important;
                position: relative !important;
                overflow: hidden !important;
@@ -138,7 +139,7 @@ export function FirstPage() {
                padding: 0 !important;
              }
     
-            /* Animated Background */
+            /* Subtle Background Pattern */
             body::before {
               content: '';
               position: fixed;
@@ -147,9 +148,8 @@ export function FirstPage() {
               width: 100%;
               height: 100%;
               background: 
-                radial-gradient(circle at 20% 30%, rgba(102, 126, 234, 0.15) 0%, transparent 50%),
-                radial-gradient(circle at 80% 70%, rgba(118, 75, 162, 0.15) 0%, transparent 50%),
-                radial-gradient(circle at 50% 50%, rgba(59, 130, 246, 0.1) 0%, transparent 50%);
+                radial-gradient(circle at 20% 30%, rgba(14, 165, 233, 0.05) 0%, transparent 50%),
+                radial-gradient(circle at 80% 70%, rgba(6, 182, 212, 0.05) 0%, transparent 50%);
               z-index: -1;
               animation: pulse 8s ease-in-out infinite;
             }
@@ -174,14 +174,13 @@ export function FirstPage() {
               align-items: center !important;
               gap: 0.5rem !important;
               padding: 0.4rem 0.9rem !important;
-              background: rgba(102, 126, 234, 0.1) !important;
-              border: 1px solid rgba(102, 126, 234, 0.3) !important;
+              background: rgba(14, 165, 233, 0.1) !important;
+              border: 1px solid rgba(14, 165, 233, 0.3) !important;
               border-radius: 50px !important;
               font-size: 0.8rem !important;
               font-weight: 600 !important;
-              color: #a5b4fc !important;
+              color: #0284c7 !important;
               margin-bottom: 1rem !important;
-              backdrop-filter: blur(10px) !important;
             }
     
             .logo-badge::before {
@@ -195,10 +194,7 @@ export function FirstPage() {
               line-height: 1.1 !important;
               margin: 0 0 0.5rem !important;
               letter-spacing: -0.02em !important;
-              background: linear-gradient(135deg, #ffffff 0%, #e2e8f0 100%) !important;
-              -webkit-background-clip: text !important;
-              -webkit-text-fill-color: transparent !important;
-              background-clip: text !important;
+              color: var(--text-primary) !important;
             }
     
             .gradient-text {
@@ -208,7 +204,6 @@ export function FirstPage() {
               -webkit-background-clip: text !important;
               -webkit-text-fill-color: transparent !important;
               background-clip: text !important;
-              filter: drop-shadow(0 0 30px var(--glow-color)) !important;
             }
     
             .hero-description {
@@ -223,7 +218,7 @@ export function FirstPage() {
             }
     
             .hero-description strong {
-              color: #a5b4fc !important;
+              color: #0284c7 !important;
               font-weight: 600 !important;
             }
     
@@ -257,18 +252,18 @@ export function FirstPage() {
               display: flex;
               gap: 0.75rem;
               padding: 0.5rem;
-              background: var(--surface-color);
-              border: 1px solid var(--border-color);
+              background: #ffffff;
+              border: 2px solid #e2e8f0;
               border-radius: 1rem;
               transition: all 0.3s ease;
-              backdrop-filter: blur(10px);
               width: 100%;
               align-items: stretch;
+              box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
             }
     
             .input-wrapper:focus-within {
               border-color: var(--primary-color);
-              box-shadow: 0 0 0 3px var(--glow-color);
+              box-shadow: 0 0 0 3px rgba(14, 165, 233, 0.1), 0 4px 6px rgba(0, 0, 0, 0.1);
               transform: translateY(-2px);
             }
     
@@ -278,13 +273,13 @@ export function FirstPage() {
               border: none !important;
               padding: 1rem 1.25rem !important;
               font-size: 1.05rem !important;
-              color: #f1f5f9 !important;
+              color: var(--text-primary) !important;
               outline: none !important;
               font-family: inherit !important;
             }
     
             .idea-input::placeholder {
-              color: #64748b !important;
+              color: var(--text-muted) !important;
             }
     
             button.launch-button {
@@ -301,12 +296,12 @@ export function FirstPage() {
               cursor: pointer !important;
               transition: all 0.3s ease !important;
               white-space: nowrap !important;
-              box-shadow: 0 4px 20px var(--glow-color) !important;
+              box-shadow: 0 4px 15px rgba(14, 165, 233, 0.3) !important;
             }
     
             .launch-button:hover:not(:disabled) {
               transform: translateY(-2px);
-              box-shadow: 0 8px 30px var(--glow-color);
+              box-shadow: 0 8px 25px rgba(14, 165, 233, 0.4);
             }
     
             .launch-button:active:not(:disabled) {
@@ -364,13 +359,13 @@ export function FirstPage() {
             }
     
             .example-link {
-              color: #a5b4fc;
+              color: #0ea5e9;
               cursor: pointer;
               transition: color 0.2s ease;
             }
     
             .example-link:hover {
-              color: #c7d2fe;
+              color: #0284c7;
               text-decoration: underline;
             }
     
@@ -393,7 +388,7 @@ export function FirstPage() {
             .feature-card:hover {
               border-color: var(--primary-color);
               transform: translateY(-4px);
-              box-shadow: 0 12px 40px rgba(0, 0, 0, 0.3);
+              box-shadow: 0 12px 40px rgba(14, 165, 233, 0.15);
             }
     
             .feature-icon {
@@ -412,7 +407,7 @@ export function FirstPage() {
               font-size: 1.25rem;
               font-weight: 700;
               margin-bottom: 0.5rem;
-              color: #f1f5f9;
+              color: var(--text-primary);
             }
     
             .feature-description {
